@@ -1,7 +1,9 @@
 [package]
 name = "quantii-types"
+description = "Special types used by Quantii or assosicated projects"
 version = "0.1.0"
 edition = "2021"
+license = "GNU LGPLv3"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
