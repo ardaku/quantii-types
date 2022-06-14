@@ -116,6 +116,7 @@ pub mod tests {
     }
 }
 
+use std::borrow::Borrow;
 // section uses
 use std::option::Option;
 
@@ -133,22 +134,26 @@ pub enum Tristate {
 
 impl Tristate {
     /// Returns whether or not it is true
-    #[must_use] pub fn is_true(self) -> bool {
+    #[must_use]
+    pub fn is_true(self) -> bool {
         self == Self::True
     }
 
     /// Returns whether or not it is false
-    #[must_use] pub fn is_false(self) -> bool {
+    #[must_use]
+    pub fn is_false(self) -> bool {
         self == Self::False
     }
 
     /// Returns whether or not it is a different value
-    #[must_use] pub fn is_other(self) -> bool {
+    #[must_use]
+    pub fn is_other(self) -> bool {
         self == Self::Else
     }
 
     /// Returns whether or not it is equivalent to the parameter `other`
-    #[must_use] pub fn is(self, other: Self) -> bool {
+    #[must_use]
+    pub fn is(self, other: Self) -> bool {
         self == other
     }
 }
@@ -195,43 +200,34 @@ impl From<Tristate> for Option<bool> {
 
 impl From<Option<bool>> for Tristate {
     fn from(old: Option<bool>) -> Self {
-        old.map_or(Self::Else, |old_as| if old_as {
-                Self::True
-            } else {
-                Self::False
-            })
+        old.map_or(
+            Self::Else,
+            |old_as| if old_as { Self::True } else { Self::False },
+        )
     }
 }
 
 /// A tree that can have more than 2 children.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct NonBinaryTree<'children, T> {
     pub value: T,
-    pub children: Vec<&'children NonBinaryTree<'children, T>>,
+    pub children: &'children [&'children NonBinaryTree<'children, T>],
 }
 
 impl<'children, T> NonBinaryTree<'children, T> {
     /// Create a new tree without an children
-    pub fn new(value: T) -> Self {
+    pub const fn new(value: T) -> Self {
         Self {
             value,
-            children: Vec::new(),
-        }
-    }
-
-    /// Create a new tree with a single child
-    pub fn new_with_child(value: T, child: &'children NonBinaryTree<'children, T>) -> Self {
-        Self {
-            value,
-            children: vec![child],
+            children: &[],
         }
     }
 
     /// Create a new tree with an arbitrary number of children
-    pub fn new_with_children(value: T, children: Vec<&'children NonBinaryTree<'children, T>>) -> Self {
-        Self {
-            value,
-            children,
-        }
+    pub const fn new_with_children(
+        value: T,
+        children: &'children [&'children NonBinaryTree<'children, T>],
+    ) -> Self {
+        Self { value, children }
     }
 }
