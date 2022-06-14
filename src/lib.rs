@@ -202,3 +202,36 @@ impl From<Option<bool>> for Tristate {
             })
     }
 }
+
+/// A tree that can have more than 2 children.
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct NonBinaryTree<'children, T> {
+    pub value: T,
+    pub children: Vec<&'children NonBinaryTree<'children, T>>,
+}
+
+impl<'children, T> NonBinaryTree<'children, T> {
+    /// Create a new tree without an children
+    pub fn new(value: T) -> Self {
+        Self {
+            value,
+            children: Vec::new(),
+        }
+    }
+
+    /// Create a new tree with a single child
+    pub fn new_with_child(value: T, child: &'children NonBinaryTree<'children, T>) -> Self {
+        Self {
+            value,
+            children: vec![child],
+        }
+    }
+
+    /// Create a new tree with an arbitrary number of children
+    pub fn new_with_children(value: T, children: Vec<&'children NonBinaryTree<'children, T>>) -> Self {
+        Self {
+            value,
+            children,
+        }
+    }
+}
