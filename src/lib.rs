@@ -204,7 +204,7 @@ impl From<Option<bool>> for Tristate {
 }
 
 /// A tree that can have more than 2 children.
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NonBinaryTree<'children, T> {
     pub value: T,
     pub children: Vec<&'children NonBinaryTree<'children, T>>,
