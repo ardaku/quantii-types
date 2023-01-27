@@ -117,6 +117,7 @@ pub mod tests {
 }
 
 use std::borrow::Borrow;
+use std::fmt::Debug;
 // section uses
 use std::option::Option;
 
@@ -231,3 +232,43 @@ impl<'children, T> NonBinaryTree<'children, T> {
         Self { value, children }
     }
 }
+
+/// String that impls `Copy + Clone`
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct CopyString {
+    inner: &'static str,
+}
+
+impl CopyString {
+    /// Create a new `CopyString` from a `&str`
+    pub const fn new(inner: &'static str) -> Self {
+        Self { inner }
+    }
+}
+
+impl std::fmt::Display for CopyString {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.inner)
+    }
+}
+
+impl std::ops::Deref for CopyString {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        self.inner
+    }
+}
+
+impl std::borrow::Borrow<String> for CopyString {
+    fn borrow(&self) -> String {
+        self.inner.to_owned()
+    }
+}
+
+impl Debug for CopyString {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.inner)
+    }
+}
+
