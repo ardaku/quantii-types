@@ -118,32 +118,19 @@ pub mod tests {
     // ****
     // * CopyString
 
+
     #[test]
     pub fn copy_string_1() {
-        let string = "Hello World";
-        let copy = CopyString::new(string);
-        assert_eq!(string, *copy);
-    }
-
-    #[test]
-    pub fn copy_string_2() {
-        let string = "Hello World";
-        let copy = CopyString::new(string);
-        assert_eq!(string, copy.as_str());
-    }
-
-    #[test]
-    pub fn copy_string_3() {
         let string = "Hello World";
         let copy = CopyString::new(string);
         assert_eq!(string, copy.as_ref());
     }
 
     #[test]
-    pub fn copy_string_4() {
+    pub fn copy_string_2() {
         let string = "Hello World";
         let copy = CopyString::new(string);
-        assert_eq!(string, copy.as_string());
+        assert_eq!(string, copy.to_string());
     }
 }
 
@@ -300,5 +287,11 @@ impl<'lt> std::borrow::Borrow<str> for CopyString<'lt> {
 impl<'lt> Debug for CopyString<'lt> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.inner)
+    }
+}
+
+impl<'lt> AsRef<str> for CopyString<'lt> {
+    fn as_ref(&self) -> &str {
+        self.inner
     }
 }
