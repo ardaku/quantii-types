@@ -266,24 +266,24 @@ impl<'children, T> NonBinaryTree<'children, T> {
 
 /// String that impls `Copy + Clone`
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub struct CopyString {
-    inner: &'static str,
+pub struct CopyString<'lt> {
+    inner: &'lt str,
 }
 
-impl CopyString {
+impl<'lt> CopyString<'lt> {
     /// Create a new `CopyString` from a `&str`
-    pub const fn new(inner: &'static str) -> Self {
+    pub const fn new(inner: &'lt str) -> Self {
         Self { inner }
     }
 }
 
-impl std::fmt::Display for CopyString {
+impl<'lt> std::fmt::Display for CopyString<'lt> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.inner)
     }
 }
 
-impl std::ops::Deref for CopyString {
+impl<'lt> std::ops::Deref for CopyString<'lt> {
     type Target = str;
 
     fn deref(&self) -> &Self::Target {
@@ -291,15 +291,14 @@ impl std::ops::Deref for CopyString {
     }
 }
 
-impl std::borrow::Borrow<str> for CopyString {
+impl<'lt> std::borrow::Borrow<str> for CopyString<'lt> {
     fn borrow(&self) -> &str {
         self.inner
     }
 }
 
-impl Debug for CopyString {
+impl<'lt> Debug for CopyString<'lt> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.inner)
     }
 }
-
