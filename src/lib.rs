@@ -114,6 +114,37 @@ pub mod tests {
     pub fn else_is_else_5() {
         assert!(Tristate::Else == Tristate::Else);
     }
+
+    // ****
+    // * CopyString
+
+    #[test]
+    pub fn copy_string_1() {
+        let string = "Hello World";
+        let copy = CopyString::new(string);
+        assert_eq!(string, *copy);
+    }
+
+    #[test]
+    pub fn copy_string_2() {
+        let string = "Hello World";
+        let copy = CopyString::new(string);
+        assert_eq!(string, copy.as_str());
+    }
+
+    #[test]
+    pub fn copy_string_3() {
+        let string = "Hello World";
+        let copy = CopyString::new(string);
+        assert_eq!(string, copy.as_ref());
+    }
+
+    #[test]
+    pub fn copy_string_4() {
+        let string = "Hello World";
+        let copy = CopyString::new(string);
+        assert_eq!(string, copy.as_string());
+    }
 }
 
 use std::borrow::Borrow;
@@ -260,9 +291,9 @@ impl std::ops::Deref for CopyString {
     }
 }
 
-impl std::borrow::Borrow<String> for CopyString {
-    fn borrow(&self) -> String {
-        self.inner.to_owned()
+impl std::borrow::Borrow<str> for CopyString {
+    fn borrow(&self) -> &str {
+        self.inner
     }
 }
 
