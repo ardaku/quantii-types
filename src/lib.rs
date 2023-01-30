@@ -121,21 +121,15 @@ pub mod tests {
 
     #[test]
     pub fn copy_string_1() {
-        let string = "Hello World";
-        let copy = CopyString::new(string);
-        assert_eq!(string, copy.as_ref());
-    }
-
-    #[test]
-    pub fn copy_string_2() {
-        let string = "Hello World";
-        let copy = CopyString::new(string);
-        assert_eq!(string, copy.to_string());
+        const STRING: &str = "Hello World";
+        const STRING_LENGTH: usize = STRING.len();
+        let copy = CopyString::<STRING_LENGTH>::new(STRING);
+        assert_eq!(STRING, copy.to_string().as_str());
     }
 }
 
-use std::borrow::Borrow;
 use std::fmt::Debug;
+use std::ops::Deref;
 // section uses
 use std::option::Option;
 
@@ -252,46 +246,49 @@ impl<'children, T> NonBinaryTree<'children, T> {
 }
 
 /// String that impls `Copy + Clone`
+/// Represented by `char`s.
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub struct CopyString<'lt> {
-    inner: &'lt str,
+pub struct CopyString<const LEN: usize> {
+    chars: [char; LEN],
 }
 
-impl<'lt> CopyString<'lt> {
+impl<const LEN: usize> CopyString<LEN> {
     /// Create a new `CopyString` from a `&str`
-    pub const fn new(inner: &'lt str) -> Self {
-        Self { inner }
+    #[must_use] pub fn new(inner: &str) -> Self {
+        // Initiate the buffer, just filled with null chars (0x00 aka 0)
+        let mut chars: [char; LEN] = [char::from(0); LEN];
+        // Push the chars from the string into the buffer
+        for (i, c) in inner.chars().enumerate() {
+            chars[i] = c;
+        }
+        Self { chars }
+    }
+
+    /// Create a new `CopyString` from a `String`
+    #[must_use] pub fn from_string(inner: String) -> Self {
+        Self::new(inner.as_str())
     }
 }
 
-impl<'lt> std::fmt::Display for CopyString<'lt> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.inner)
-    }
-}
 
-impl<'lt> std::ops::Deref for CopyString<'lt> {
-    type Target = str;
+impl<const LEN: usize> Deref for CopyString<LEN> {
+    type Target = [char; LEN];
 
     fn deref(&self) -> &Self::Target {
-        self.inner
+        &self.chars
     }
 }
 
-impl<'lt> std::borrow::Borrow<str> for CopyString<'lt> {
-    fn borrow(&self) -> &str {
-        self.inner
-    }
-}
-
-impl<'lt> Debug for CopyString<'lt> {
+impl<const LEN: usize> Debug for CopyString<LEN> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.inner)
+        write!(f, "{}", *self)
     }
 }
 
-impl<'lt> AsRef<str> for CopyString<'lt> {
-    fn as_ref(&self) -> &str {
-        self.inner
+
+impl<const LEN: usize> std::fmt::Display for CopyString<LEN> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let self_inner = **self;
+        write!(f, "{}", self_inner.iter().collect::<String>())
     }
 }
