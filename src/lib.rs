@@ -118,7 +118,6 @@ pub mod tests {
     // ****
     // * CopyString
 
-
     #[test]
     pub fn copy_string_1() {
         const STRING: &str = "Hello World";
@@ -245,8 +244,7 @@ impl<'children, T> NonBinaryTree<'children, T> {
     }
 }
 
-/// String that impls `Copy + Clone`
-/// Represented by `char`s.
+/// String that impls `Copy + Clone` represented by `char`s.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct CopyString<const LEN: usize> {
     chars: [char; LEN],
@@ -254,7 +252,8 @@ pub struct CopyString<const LEN: usize> {
 
 impl<const LEN: usize> CopyString<LEN> {
     /// Create a new `CopyString` from a `&str`
-    #[must_use] pub fn new(inner: &str) -> Self {
+    #[must_use]
+    pub fn new(inner: &str) -> Self {
         // Initiate the buffer, just filled with null chars (0x00 aka 0)
         let mut chars: [char; LEN] = [char::from(0); LEN];
         // Push the chars from the string into the buffer
@@ -265,11 +264,11 @@ impl<const LEN: usize> CopyString<LEN> {
     }
 
     /// Create a new `CopyString` from a `String`
-    #[must_use] pub fn from_string(inner: String) -> Self {
+    #[must_use]
+    pub fn from_string(inner: String) -> Self {
         Self::new(inner.as_str())
     }
 }
-
 
 impl<const LEN: usize> Deref for CopyString<LEN> {
     type Target = [char; LEN];
@@ -285,10 +284,46 @@ impl<const LEN: usize> Debug for CopyString<LEN> {
     }
 }
 
-
 impl<const LEN: usize> std::fmt::Display for CopyString<LEN> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let self_inner = **self;
         write!(f, "{}", self_inner.iter().collect::<String>())
+    }
+}
+
+/// A closure, like the trait `dyn` [`Fn`], but implements [`Copy`] `+` [`Clone`]. It's also a
+/// struct, not a trait object.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct CopyFn<>
+impl<>
+
+/// A closure, like the trait `dyn` [`FnMut`], but implements [`Copy`] `+` [`Clone`]. It's also a
+/// struct, not a trait object.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct CopyFnMut {
+    pub(crate) inner: fn(),
+}
+
+impl CopyFnMut {
+    /// Create a new `CopyFnMut` from a `fn()`
+    #[must_use]
+    pub const fn new(inner: fn()) -> Self {
+        Self { inner }
+    }
+}
+
+/// A closure, like the trait `dyn` [`FnOnce`], but implements [`Copy`] `+` [`Clone`]. It's also a
+
+/// struct, not a trait object.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct CopyFnOnce {
+    pub(crate) inner: fn(),
+}
+
+impl CopyFnOnce {
+    /// Create a new `CopyFnOnce` from a `fn()`
+    #[must_use]
+    pub const fn new(inner: fn()) -> Self {
+        Self { inner }
     }
 }
