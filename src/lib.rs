@@ -37,7 +37,7 @@
 #![allow(clippy::print_stdout)]
 #![allow(clippy::blanket_clippy_restriction_lints)]
 #![allow(clippy::unwrap_used)]
-#![allow(clippy::let_underscore_drop)]
+#![allow(let_underscore_drop)]
 #![allow(clippy::indexing_slicing)]
 #![allow(clippy::inline_always)]
 #![allow(clippy::unwrap_in_result)]
@@ -132,6 +132,10 @@ use std::fmt::Debug;
 use std::ops::Deref;
 // section uses
 use std::option::Option;
+use std::collections::HashMap;
+use std::sync::Mutex;
+use lazy_static::lazy_static;
+use rand::{Rng};
 
 /// A tri-state boolean.
 #[repr(u8)]
@@ -292,15 +296,20 @@ impl<const LEN: usize> std::fmt::Display for CopyString<LEN> {
     }
 }
 
+
 pub trait CopyFns1<In, Out = ()> {
     fn call(&self, input: In) -> Out;
+}
+
+pub trait CopyMutFns1<In, Out = ()> {
+    fn call_mut(&mut self, input: In) -> Out;
 }
 
 /// A closure, like the trait `dyn` [`Fn`], but implements [`Copy`] `+` [`Clone`]. It's also a
 /// struct, not a trait object.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct CopyFn1<In, Out = ()> {
-    pub(crate) inner: fn(In) -> O,
+    pub(crate) inner: fn(In) -> Out,
 }
 
 impl<In, Out> CopyFn1<In, Out> {
@@ -332,10 +341,20 @@ impl<In, Out> CopyFnMut1<In, Out> {
     }
 }
 
-impl<In, Out> CopyFns1<In, Out> for CopyFnMut1<In, Out> {
-    fn call(&mut self, input: In) -> Out {
-        (self.inner).call_mut(input)
+impl<In, Out> CopyMutFns1<In, Out> for CopyFnMut1<In, Out> {
+    fn call_mut(&mut self, input: In) -> Out {
+        (self.inner).call_mut((input,))
     }
+}
+
+lazy_static!{
+    /// Stores all of the `CopyFnOnce1`'s called-states
+    pub static ref CALLED_STATES: Mutex<HashMap<&'static str, bool>> = Mutex::new(HashMap::new());
+};
+
+lazy_static!{
+    /// Stores all of the `CopyFnOnce1`'s used ids
+    pub static ref USED_IDS: Mutex<Vec<u16>> = Mutex::new(Vec::new());
 }
 
 /// A closure, like the trait `dyn` [`FnOnce`], but implements [`Copy`] `+` [`Clone`]. It's also a
@@ -343,23 +362,29 @@ impl<In, Out> CopyFns1<In, Out> for CopyFnMut1<In, Out> {
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct CopyFnOnce1<In, Out = ()> {
     pub(crate) inner: fn(In) -> Out,
-    pub(crate) called: bool,
+    id: u16,
 }
 
 impl<In, Out> CopyFnOnce1<In, Out> {
     /// Create a new `CopyFnOnce1` from a `fn(In) -> Out`
     #[must_use]
     pub const fn new(inner: fn(In) -> Out) -> Self {
-        Self { inner, called: false }
+        Self { inner, id: }
+
     }
 }
 
 impl<In, Out> CopyFns1<In, Out> for CopyFnOnce1<In, Out> {
-    fn call(&mut self, input: In) -> Out {
-        if self.called {
-            panic!("`CopyFnOnce1` called twice");
-        }
-        self.called = true;
+    fn call(&self, input: In) -> Out {
         (self.inner)(input)
     }
+}
+
+fn random_id() -> u16 {
+    let mut rng = rand::thread_rng();
+    let mut id = rng.gen_range(0..u16::MAX);
+    while USED_IDS.lock().unwrap().contains(&id) {
+        id = rng.gen_range(0..u16::MAX);
+    }
+    id
 }
