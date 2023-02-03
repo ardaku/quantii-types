@@ -1,3 +1,4 @@
+#![feature(fn_traits)]
 // Copyright (c) 2022 The Quantii Contributors
 //
 // This file is part of Quantii.
@@ -291,39 +292,74 @@ impl<const LEN: usize> std::fmt::Display for CopyString<LEN> {
     }
 }
 
+pub trait CopyFns1<In, Out = ()> {
+    fn call(&self, input: In) -> Out;
+}
+
 /// A closure, like the trait `dyn` [`Fn`], but implements [`Copy`] `+` [`Clone`]. It's also a
 /// struct, not a trait object.
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub struct CopyFn<>
-impl<>
-
-/// A closure, like the trait `dyn` [`FnMut`], but implements [`Copy`] `+` [`Clone`]. It's also a
-/// struct, not a trait object.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub struct CopyFnMut {
-    pub(crate) inner: fn(),
+pub struct CopyFn1<In, Out = ()> {
+    pub(crate) inner: fn(In) -> O,
 }
 
-impl CopyFnMut {
-    /// Create a new `CopyFnMut` from a `fn()`
+impl<In, Out> CopyFn1<In, Out> {
+    /// Create a new `CopyFn1` from a `fn(In) -> Out`
     #[must_use]
-    pub const fn new(inner: fn()) -> Self {
+    pub const fn new(inner: fn(In) -> Out) -> Self {
         Self { inner }
     }
 }
 
-/// A closure, like the trait `dyn` [`FnOnce`], but implements [`Copy`] `+` [`Clone`]. It's also a
-
-/// struct, not a trait object.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub struct CopyFnOnce {
-    pub(crate) inner: fn(),
+impl<In, Out> CopyFns1<In, Out> for CopyFn1<In, Out> {
+    fn call(&self, input: In) -> Out {
+        (self.inner)(input)
+    }
 }
 
-impl CopyFnOnce {
-    /// Create a new `CopyFnOnce` from a `fn()`
+/// A closure, like the trait `dyn` [`FnMut`], but implements [`Copy`] `+` [`Clone`]. It's also a
+/// struct, not a trait object.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct CopyFnMut1<In, Out = ()> {
+    pub(crate) inner: fn(In) -> Out,
+}
+
+impl<In, Out> CopyFnMut1<In, Out> {
+    /// Create a new `CopyFnMut1` from a `fn(In) -> Out`
     #[must_use]
-    pub const fn new(inner: fn()) -> Self {
+    pub const fn new(inner: fn(In) -> Out) -> Self {
         Self { inner }
+    }
+}
+
+impl<In, Out> CopyFns1<In, Out> for CopyFnMut1<In, Out> {
+    fn call(&mut self, input: In) -> Out {
+        (self.inner).call_mut(input)
+    }
+}
+
+/// A closure, like the trait `dyn` [`FnOnce`], but implements [`Copy`] `+` [`Clone`]. It's also a
+/// struct, not a trait object.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct CopyFnOnce1<In, Out = ()> {
+    pub(crate) inner: fn(In) -> Out,
+    pub(crate) called: bool,
+}
+
+impl<In, Out> CopyFnOnce1<In, Out> {
+    /// Create a new `CopyFnOnce1` from a `fn(In) -> Out`
+    #[must_use]
+    pub const fn new(inner: fn(In) -> Out) -> Self {
+        Self { inner, called: false }
+    }
+}
+
+impl<In, Out> CopyFns1<In, Out> for CopyFnOnce1<In, Out> {
+    fn call(&mut self, input: In) -> Out {
+        if self.called {
+            panic!("`CopyFnOnce1` called twice");
+        }
+        self.called = true;
+        (self.inner)(input)
     }
 }
