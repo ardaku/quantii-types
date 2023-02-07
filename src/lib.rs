@@ -128,10 +128,9 @@ pub mod tests {
     }
 }
 
-use std::fmt::Debug;
-use std::ops::Deref;
-// section uses
-use std::option::Option;
+use core::fmt::Debug;
+use core::ops::Deref;
+use core::option::Option;
 use std::collections::HashMap;
 use std::sync::Mutex;
 use lazy_static::lazy_static;
@@ -284,13 +283,13 @@ impl<const LEN: usize> Deref for CopyString<LEN> {
 }
 
 impl<const LEN: usize> Debug for CopyString<LEN> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}", *self)
     }
 }
 
-impl<const LEN: usize> std::fmt::Display for CopyString<LEN> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<const LEN: usize> core::fmt::Display for CopyString<LEN> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let self_inner = **self;
         write!(f, "{}", self_inner.iter().collect::<String>())
     }
@@ -350,7 +349,7 @@ impl<In, Out> CopyMutFns1<In, Out> for CopyFnMut1<In, Out> {
 lazy_static!{
     /// Stores all of the `CopyFnOnce1`'s called-states
     pub static ref CALLED_STATES: Mutex<HashMap<&'static str, bool>> = Mutex::new(HashMap::new());
-};
+}
 
 lazy_static!{
     /// Stores all of the `CopyFnOnce1`'s used ids
@@ -368,8 +367,8 @@ pub struct CopyFnOnce1<In, Out = ()> {
 impl<In, Out> CopyFnOnce1<In, Out> {
     /// Create a new `CopyFnOnce1` from a `fn(In) -> Out`
     #[must_use]
-    pub const fn new(inner: fn(In) -> Out) -> Self {
-        Self { inner, id: }
+    pub fn new(inner: fn(In) -> Out) -> Self {
+        Self { inner, id: random_id() }
 
     }
 }
